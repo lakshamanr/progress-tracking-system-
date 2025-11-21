@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "Import Plan";
+    var hasPlans = ViewBag.HasPlans as bool? ?? false;
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-upload text-primary"></i> Import Daily Plan
+        </h1>
+        <p class="lead">Import your 368-day learning plan from a markdown file</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Upload Plan File</h5>
+            </div>
+            <div class="card-body">
+                @if (hasPlans)
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Warning:</strong> You already have a plan imported. Importing a new plan will replace the existing one.
+                    </div>
+                }
+
+                <form asp-controller="Reports" asp-action="ImportPlan" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="planFile" class="form-label">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Select Markdown File
+                        </label>
+                        <input class="form-control" type="file" id="planFile" name="planFile"
+                               accept=".md,.markdown,.txt" required>
+                        <div class="form-text">
+                            Upload your daily_plan_2026.md file or any compatible markdown file.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-upload"></i> Import Plan
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @if (hasPlans)
+        {
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-check-circle"></i> Plan Already Imported</h5>
+                </div>
+                <div class="card-body">
+                    <p>Your plan has been successfully imported. You can now:</p>
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                            <i class="bi bi-house-door"></i> Go to Dashboard
+                        </a>
+                        <a href="@Url.Action("Today", "Progress")" class="btn btn-info">
+                            <i class="bi bi-calendar-day"></i> View Today's Plan
+                        </a>
+                        <a href="@Url.Action("Stats", "Progress")" class="btn btn-success">
+                            <i class="bi bi-graph-up"></i> View Statistics
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> File Format</h6>
+            </div>
+            <div class="card-body">
+                <p>Your markdown file should contain:</p>
+                <ul>
+                    <li>Day headers with format: <code>**Day X (Date)** - Title</code></li>
+                    <li>Morning, Evening, and Night activities</li>
+                    <li>Focus area</li>
+                    <li>Interview prep topic</li>
+                </ul>
+                <p class="mb-0"><small class="text-muted">The importer will automatically parse and organize your plan into the database.</small></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> What Happens Next?</h6>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>All 368 days will be imported</li>
+                    <li>Activities categorized by time of day</li>
+                    <li>Dates and schedules set up</li>
+                    <li>Ready to track your progress!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,192 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    var todayPlan = ViewBag.TodayPlan as DailyPlan;
+    var totalDays = ViewBag.TotalDays as int? ?? 0;
+    var completedDays = ViewBag.CompletedDays as int? ?? 0;
+    var totalDsaProblems = ViewBag.TotalDsaProblems as int? ?? 0;
+    var totalHours = ViewBag.TotalHours as double? ?? 0;
+    var currentStreak = ViewBag.CurrentStreak as int? ?? 0;
+    var completionRate = ViewBag.CompletionRate as int? ?? 0;
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">
+            <i class="bi bi-house-door text-primary"></i> Dashboard
+        </h1>
+        <p class="lead">Welcome to your 368-day learning journey!</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-calendar3"></i> Total Days</h5>
+                <h2 class="card-text">@totalDays</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-check-circle"></i> Completed</h5>
+                <h2 class="card-text">@completedDays</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-code-square"></i> DSA Problems</h5>
+                <h2 class="card-text">@totalDsaProblems</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-fire"></i> Current Streak</h5>
+                <h2 class="card-text">@currentStreak days</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Overall Progress</h5>
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                         role="progressbar"
+                         style="width: @completionRate%"
+                         aria-valuenow="@completionRate"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                        @completionRate%
+                    </div>
+                </div>
+                <p class="mt-2 mb-0">
+                    <strong>@completedDays</strong> of <strong>@totalDays</strong> days completed |
+                    <strong>@totalHours.ToString("F1")</strong> hours logged
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Plan -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-day"></i> Today's Plan - @DateTime.Today.ToString("MMMM d, yyyy")</h5>
+            </div>
+            <div class="card-body">
+                @if (todayPlan != null)
+                {
+                    <h6 class="card-subtitle mb-3 text-muted">Day @todayPlan.DayNumber: @todayPlan.Title</h6>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-sun"></i> Morning:</strong><br/>@todayPlan.MorningActivity</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-sunset"></i> Evening:</strong><br/>@todayPlan.EveningActivity</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-moon"></i> Night:</strong><br/>@todayPlan.NightActivity</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-bullseye"></i> Focus:</strong> @todayPlan.FocusArea</p>
+                            <p><strong><i class="bi bi-briefcase"></i> Interview Prep:</strong> @todayPlan.InterviewPrepTopic</p>
+                        </div>
+                    </div>
+
+                    @if (todayPlan.Progress != null)
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle"></i> Progress recorded!
+                            Completion: @todayPlan.Progress.CompletionPercentage%
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No progress recorded yet for today.
+                        </div>
+                    }
+
+                    <a href="@Url.Action("Today", "Progress")" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Track Progress
+                    </a>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> No plan found for today.
+                        <a href="@Url.Action("Import", "Reports")" class="alert-link">Import your plan</a> to get started.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Quick Stats</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Completion Rate
+                        <span class="badge bg-primary rounded-pill">@completionRate%</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        DSA Problems
+                        <span class="badge bg-info rounded-pill">@totalDsaProblems</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Hours
+                        <span class="badge bg-success rounded-pill">@totalHours.ToString("F1")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Current Streak
+                        <span class="badge bg-warning rounded-pill">@currentStreak</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Links</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Week", "Progress")" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-week"></i> This Week
+                    </a>
+                    <a href="@Url.Action("Month", "Progress")" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-month"></i> This Month
+                    </a>
+                    <a href="@Url.Action("Stats", "Progress")" class="btn btn-outline-primary">
+                        <i class="bi bi-graph-up"></i> All Statistics
+                    </a>
+                    <a href="@Url.Action("ExportExcel", "Reports")" class="btn btn-outline-success">
+                        <i class="bi bi-file-earmark-excel"></i> Export to Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

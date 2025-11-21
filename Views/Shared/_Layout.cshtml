@@ -14,13 +14,10 @@
         <header class="app-header fade-in">
             <h1>🎯 Daily Plan Tracker</h1>
             <p class="subtitle">368-Day Learning Journey | Track Your Progress to Success</p>
-            <p class="subtitle" style="font-size: 1rem; opacity: 0.9; margin-top: 10px;">
-                Build Better Habits, Master New Skills, Achieve Your Goals
-            </p>
         </header>
 
         <!-- Modern Navigation Bar -->
-        <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 0;">
+        <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 8px 0;">
             <div class="container-fluid">
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
@@ -66,45 +63,42 @@
             </div>
         </nav>
 
-        <!-- Content Wrapper --><div class="content-wrapper" style="padding: 40px;">
+        <!-- Content Wrapper --><div class="content-wrapper" style="padding: 20px;">
             @if (TempData["SuccessMessage"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show scale-in" role="alert" style="border-radius: 15px; border-left: 5px solid #56ab2f;">
+                <div class="alert alert-success alert-dismissible fade show scale-in" role="alert" style="border-radius: 10px; border-left: 4px solid #56ab2f; padding: 0.6rem 1rem;">
                     <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
             @if (TempData["ErrorMessage"] != null)
             {
-                <div class="alert alert-danger alert-dismissible fade show scale-in" role="alert" style="border-radius: 15px; border-left: 5px solid #f5576c;">
+                <div class="alert alert-danger alert-dismissible fade show scale-in" role="alert" style="border-radius: 10px; border-left: 4px solid #f5576c; padding: 0.6rem 1rem;">
                     <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
             @if (TempData["WarningMessage"] != null)
             {
-                <div class="alert alert-warning alert-dismissible fade show scale-in" role="alert" style="border-radius: 15px; border-left: 5px solid #ffc107;">
+                <div class="alert alert-warning alert-dismissible fade show scale-in" role="alert" style="border-radius: 10px; border-left: 4px solid #ffc107; padding: 0.6rem 1rem;">
                     <i class="bi bi-exclamation-circle-fill"></i> @TempData["WarningMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
-            <main role="main" class="pb-3">
+            <main role="main" class="pb-2">
                 @RenderBody()
             </main>
         </div>
 
         <!-- Modern Footer -->
-        <footer style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 50px; color: white; text-align: center; margin-top: 50px; border-radius: 0 0 20px 20px;">
+        <footer style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 30px; color: white; text-align: center; margin-top: 20px; border-radius: 0 0 15px 15px;">
             <div>
-                <p style="margin: 0; font-size: 1.1rem; font-weight: 500;">
+                <p style="margin: 0; font-size: 0.9rem; font-weight: 500;">
                     <i class="bi bi-calendar-check"></i> Daily Plan Tracker
                 </p>
-                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 0.9rem;">
-                    368 Days Learning Journey | Build Your Future One Day at a Time
-                </p>
-                <p style="margin: 10px 0 0 0; opacity: 0.8; font-size: 0.85rem;">
-                    © @DateTime.Now.Year - Track Progress, Achieve Goals, Transform Your Life
+                <p style="margin: 3px 0 0 0; opacity: 0.9; font-size: 0.75rem;">
+                    368 Days Learning Journey | © @DateTime.Now.Year - Track Progress, Achieve Goals
                 </p>
             </div>
         </footer>

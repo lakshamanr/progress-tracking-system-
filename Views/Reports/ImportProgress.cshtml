@@ -1,0 +1,173 @@
+@{
+    ViewData["Title"] = "Import Progress from CSV";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-upload text-primary"></i> Import Progress from CSV
+        </h1>
+        <p class="lead">Bulk update your daily progress by uploading a CSV file</p>
+    </div>
+</div>
+
+<!-- Instructions -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="alert alert-info">
+            <h5 class="alert-heading"><i class="bi bi-info-circle"></i> How It Works</h5>
+            <ol class="mb-0">
+                <li>Download the CSV template below</li>
+                <li>Fill in your progress data (use Excel, Google Sheets, or any text editor)</li>
+                <li>Save the file as CSV format</li>
+                <li>Upload it using the form below</li>
+            </ol>
+        </div>
+
+        @if (TempData["ImportErrors"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <h6><i class="bi bi-exclamation-triangle"></i> Import Errors:</h6>
+                @Html.Raw(TempData["ImportErrors"])
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- Upload Form -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-up"></i> Upload Progress CSV</h5>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Reports" asp-action="ImportProgressCsv" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="csvFile" class="form-label">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Select CSV File
+                        </label>
+                        <input class="form-control" type="file" id="csvFile" name="csvFile"
+                               accept=".csv,text/csv" required>
+                        <div class="form-text">
+                            Upload a CSV file with your progress data.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-upload"></i> Import Progress
+                        </button>
+                        <a href="@Url.Action("DownloadCsvTemplate", "Reports")" class="btn btn-outline-success btn-lg">
+                            <i class="bi bi-download"></i> Download CSV Template
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Example CSV Format -->
+        <div class="card mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="bi bi-table"></i> CSV Format Example</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Required Columns (in order):</strong></p>
+                <ol>
+                    <li><code>Day Number</code> - The day number from your plan (1-368)</li>
+                    <li><code>Date</code> - The date (YYYY-MM-DD format)</li>
+                    <li><code>Morning Completed</code> - true/false or yes/no</li>
+                    <li><code>Evening Completed</code> - true/false or yes/no</li>
+                    <li><code>Night Completed</code> - true/false or yes/no</li>
+                    <li><code>DSA Problems</code> - Number of problems solved (0-100)</li>
+                    <li><code>Hours Spent</code> - Hours worked (0.0-24.0)</li>
+                    <li><code>Energy Level (1-5)</code> - Your energy level</li>
+                    <li><code>Confidence Level (1-5)</code> - Your confidence level</li>
+                    <li><code>Notes</code> - Any additional notes (optional)</li>
+                </ol>
+
+                <div class="bg-light p-3 rounded">
+                    <pre class="mb-0"><code>Day Number,Date,Morning Completed,Evening Completed,Night Completed,DSA Problems,Hours Spent,Energy Level (1-5),Confidence Level (1-5),Notes
+1,2025-12-01,true,true,false,3,2.5,4,3,"Great start!"
+2,2025-12-02,true,true,true,5,4.0,5,4,"Completed all activities"
+3,2025-12-03,true,false,false,2,1.5,3,2,"Tired today"</code></pre>
+                </div>
+
+                <div class="alert alert-warning mt-3 mb-0">
+                    <small>
+                        <strong>Tips:</strong>
+                        <ul class="mb-0">
+                            <li>Use quotes around text with commas or special characters</li>
+                            <li>Boolean values can be: true/false, yes/no, 1/0, ✓/x</li>
+                            <li>If a day already has progress, it will be updated with new values</li>
+                            <li>Invalid lines will be skipped with error messages</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Quick Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Download the template first - it includes examples
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Edit in Excel or Google Sheets for easier formatting
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Save as CSV (Comma Delimited) format
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        You can import partial data - missing fields use defaults
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Import multiple times - updates existing records
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-question-circle"></i> Use Cases</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Perfect for:</strong></p>
+                <ul>
+                    <li>Tracking progress offline</li>
+                    <li>Bulk updating multiple days</li>
+                    <li>Migrating from spreadsheets</li>
+                    <li>Backing up and restoring data</li>
+                    <li>Sharing progress with mentors</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="bi bi-link-45deg"></i> Quick Links</h6>
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Today", "Progress")" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-calendar-day"></i> Today's Plan
+                    </a>
+                    <a href="@Url.Action("ExportCsv", "Reports")" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-download"></i> Export Current Data
+                    </a>
+                    <a href="@Url.Action("Stats", "Progress")" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-graph-up"></i> View Statistics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

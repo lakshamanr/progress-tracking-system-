@@ -62,6 +62,63 @@ public class ReportsController : Controller
         return RedirectToAction(nameof(Import));
     }
 
+    // GET: Reports/ImportProgress
+    public IActionResult ImportProgress()
+    {
+        return View();
+    }
+
+    // POST: Reports/ImportProgressCsv
+    [HttpPost]
+    public async Task<IActionResult> ImportProgressCsv(IFormFile? csvFile)
+    {
+        if (csvFile == null || csvFile.Length == 0)
+        {
+            TempData["ErrorMessage"] = "Please select a CSV file to import.";
+            return RedirectToAction(nameof(ImportProgress));
+        }
+
+        if (!csvFile.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["ErrorMessage"] = "Please upload a valid CSV file.";
+            return RedirectToAction(nameof(ImportProgress));
+        }
+
+        try
+        {
+            using var stream = csvFile.OpenReadStream();
+            var importer = new CsvProgressImporter(_context);
+            var result = await importer.ImportProgressFromCsvAsync(stream);
+
+            if (result.HasErrors)
+            {
+                TempData["WarningMessage"] = $"Import completed with {result.Errors.Count} errors. " +
+                    $"Created: {result.Created}, Updated: {result.Updated}";
+                TempData["ImportErrors"] = string.Join("<br/>", result.Errors);
+            }
+            else
+            {
+                TempData["SuccessMessage"] = $"Successfully imported progress! Created: {result.Created}, Updated: {result.Updated}";
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Error importing CSV: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(ImportProgress));
+    }
+
+    // GET: Reports/DownloadCsvTemplate
+    public async Task<IActionResult> DownloadCsvTemplate()
+    {
+        var importer = new CsvProgressImporter(_context);
+        var csv = await importer.GenerateCsvTemplateAsync();
+
+        var fileName = $"ProgressTemplate_{DateTime.Now:yyyyMMdd}.csv";
+        return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
+    }
+
     // GET: Reports/Weekly
     public async Task<IActionResult> Weekly()
     {

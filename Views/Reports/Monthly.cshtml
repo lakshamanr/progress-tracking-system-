@@ -117,21 +117,35 @@ else
     <script>
         @if (monthlyStats != null && monthlyStats.Count > 0)
         {
+            // Build data arrays manually to avoid dynamic lambda issues
+            var monthLabels = new List<string>();
+            var completedData = new List<int>();
+            var dsaData = new List<int>();
+
+            foreach (var m in monthlyStats)
+            {
+                var monthNum = (int)m.MonthNumber;
+                var monthDate = new DateTime(2026, monthNum == 12 ? 12 : monthNum, 1);
+                monthLabels.Add($"'{monthDate.ToString("MMM")}'");
+                completedData.Add((int)m.CompletedDays);
+                dsaData.Add((int)m.TotalDsaProblems);
+            }
+
             <text>
             const yearlyCtx = document.getElementById('yearlyOverviewChart').getContext('2d');
             new Chart(yearlyCtx, {
                 type: 'bar',
                 data: {
-                    labels: [@Html.Raw(string.Join(",", monthlyStats.Select(m => $"'{new DateTime(2026, m.MonthNumber == 12 ? 12 : m.MonthNumber, 1).ToString("MMM")}'")))],
+                    labels: [@Html.Raw(string.Join(",", monthLabels))],
                     datasets: [
                         {
                             label: 'Days Completed',
-                            data: [@Html.Raw(string.Join(",", monthlyStats.Select(m => m.CompletedDays)))],
+                            data: [@Html.Raw(string.Join(",", completedData))],
                             backgroundColor: 'rgba(25, 135, 84, 0.8)'
                         },
                         {
                             label: 'DSA Problems',
-                            data: [@Html.Raw(string.Join(",", monthlyStats.Select(m => m.TotalDsaProblems)))],
+                            data: [@Html.Raw(string.Join(",", dsaData))],
                             backgroundColor: 'rgba(13, 202, 240, 0.8)'
                         }
                     ]

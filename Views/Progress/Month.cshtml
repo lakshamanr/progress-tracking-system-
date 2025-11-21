@@ -193,6 +193,14 @@ else
 
 @section Scripts {
     <script>
+        @if (Model != null && Model.Any())
+        {
+            var totalDays = Model.Count;
+            var completedDays = Model.Count(p => p.Progress != null && p.Progress.IsFullyCompleted);
+            var partialDays = Model.Count(p => p.Progress != null && !p.Progress.IsFullyCompleted && (p.Progress.MorningCompleted || p.Progress.EveningCompleted || p.Progress.NightCompleted));
+            var notStartedDays = totalDays - completedDays - partialDays;
+
+            <text>
         // Status Pie Chart
         const statusCtx = document.getElementById('monthStatusChart').getContext('2d');
         new Chart(statusCtx, {
@@ -252,5 +260,7 @@ else
                 }
             }
         });
+            </text>
+        }
     </script>
 }

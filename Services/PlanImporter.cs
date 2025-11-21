@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using DailyPlanTracker.Data;
 using DailyPlanTracker.Models;
-using Spectre.Console;
 
 namespace DailyPlanTracker.Services;
 
@@ -255,20 +254,15 @@ public class PlanImporter
     }
 
     /// <summary>
-    /// Display import summary
+    /// Display import summary (for console output)
     /// </summary>
     public void DisplayImportSummary(int importedCount)
     {
-        var table = new Table();
-        table.AddColumn("Summary");
-        table.AddColumn("Value");
-
-        table.AddRow("Total Days Imported", importedCount.ToString());
-        table.AddRow("Start Date", "December 1, 2025");
-        table.AddRow("End Date", "December 1, 2026");
-        table.AddRow("Duration", "368 days");
-
-        AnsiConsole.Write(table);
-        AnsiConsole.MarkupLine($"[green]✓[/] Successfully imported {importedCount} days!");
+        Console.WriteLine("=== Import Summary ===");
+        Console.WriteLine($"Total Days Imported: {importedCount}");
+        Console.WriteLine($"Start Date: December 1, 2025");
+        Console.WriteLine($"End Date: December 1, 2026");
+        Console.WriteLine($"Duration: 368 days");
+        Console.WriteLine($"✓ Successfully imported {importedCount} days!");
     }
 }

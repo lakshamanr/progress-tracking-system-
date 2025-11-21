@@ -38,13 +38,11 @@
     </div>
 
     <!-- Heatmap by Month -->
-    @{
-        var monthlyGroups = Model.GroupBy(p => new { p.MonthNumber, p.MonthTheme })
-            .OrderBy(g => g.Key.MonthNumber)
-            .ToList();
-    }
+    var monthlyGroups = Model.GroupBy(p => new { p.MonthNumber, p.MonthTheme })
+        .OrderBy(g => g.Key.MonthNumber)
+        .ToList();
 
-    @foreach (var monthGroup in monthlyGroups)
+    foreach (var monthGroup in monthlyGroups)
     {
         var monthPlans = monthGroup.OrderBy(p => p.DayNumber).ToList();
         var monthName = monthPlans.First().CurrentDate.ToString("MMMM yyyy");

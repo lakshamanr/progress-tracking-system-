@@ -9,80 +9,106 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-calendar-check"></i> Daily Plan Tracker
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-house-door"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="progressDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-graph-up"></i> Progress
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" asp-controller="Progress" asp-action="Today">Today's Plan</a></li>
-                            <li><a class="dropdown-item" asp-controller="Progress" asp-action="Week">This Week</a></li>
-                            <li><a class="dropdown-item" asp-controller="Progress" asp-action="Month">This Month</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" asp-controller="Progress" asp-action="Calendar">Calendar View</a></li>
-                            <li><a class="dropdown-item" asp-controller="Progress" asp-action="Stats">Statistics</a></li>
-                            <li><a class="dropdown-item" asp-controller="Progress" asp-action="Timeline">Timeline</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-file-earmark-text"></i> Reports
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" asp-controller="Reports" asp-action="Import">Import Plan</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" asp-controller="Reports" asp-action="Weekly">Weekly Summary</a></li>
-                            <li><a class="dropdown-item" asp-controller="Reports" asp-action="Monthly">Monthly Report</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" asp-controller="Reports" asp-action="ExportExcel">Export to Excel</a></li>
-                            <li><a class="dropdown-item" asp-controller="Reports" asp-action="ExportCsv">Export to CSV</a></li>
-                        </ul>
-                    </li>
-                </ul>
+    <div class="main-container">
+        <!-- Beautiful Gradient Header -->
+        <header class="app-header fade-in">
+            <h1>🎯 Daily Plan Tracker</h1>
+            <p class="subtitle">368-Day Learning Journey | Track Your Progress to Success</p>
+            <p class="subtitle" style="font-size: 1rem; opacity: 0.9; margin-top: 10px;">
+                Build Better Habits, Master New Skills, Achieve Your Goals
+            </p>
+        </header>
+
+        <!-- Modern Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 0;">
+            <div class="container-fluid">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door-fill"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="progressDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-graph-up-arrow"></i> Progress
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Progress" asp-action="Today"><i class="bi bi-calendar-day"></i> Today's Plan</a></li>
+                                <li><a class="dropdown-item" asp-controller="Progress" asp-action="Week"><i class="bi bi-calendar-week"></i> This Week</a></li>
+                                <li><a class="dropdown-item" asp-controller="Progress" asp-action="Month"><i class="bi bi-calendar-month"></i> This Month</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Progress" asp-action="Calendar"><i class="bi bi-calendar3"></i> Calendar View</a></li>
+                                <li><a class="dropdown-item" asp-controller="Progress" asp-action="Stats"><i class="bi bi-bar-chart-fill"></i> Statistics</a></li>
+                                <li><a class="dropdown-item" asp-controller="Progress" asp-action="Timeline"><i class="bi bi-clock-history"></i> Timeline</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-file-earmark-bar-graph"></i> Reports
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Reports" asp-action="Import"><i class="bi bi-file-earmark-arrow-down"></i> Import Plan</a></li>
+                                <li><a class="dropdown-item" asp-controller="Reports" asp-action="ImportProgress"><i class="bi bi-upload"></i> Import Progress CSV</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Reports" asp-action="Weekly"><i class="bi bi-journal-text"></i> Weekly Summary</a></li>
+                                <li><a class="dropdown-item" asp-controller="Reports" asp-action="Monthly"><i class="bi bi-calendar-month-fill"></i> Monthly Report</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Reports" asp-action="ExportExcel"><i class="bi bi-file-earmark-excel"></i> Export to Excel</a></li>
+                                <li><a class="dropdown-item" asp-controller="Reports" asp-action="ExportCsv"><i class="bi bi-filetype-csv"></i> Export to CSV</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
+        </nav>
+
+        <!-- Content Wrapper --><div class="content-wrapper" style="padding: 40px;">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show scale-in" role="alert" style="border-radius: 15px; border-left: 5px solid #56ab2f;">
+                    <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show scale-in" role="alert" style="border-radius: 15px; border-left: 5px solid #f5576c;">
+                    <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["WarningMessage"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show scale-in" role="alert" style="border-radius: 15px; border-left: 5px solid #ffc107;">
+                    <i class="bi bi-exclamation-circle-fill"></i> @TempData["WarningMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
         </div>
-    </nav>
 
-    <div class="container-fluid mt-4">
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <!-- Modern Footer -->
+        <footer style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 50px; color: white; text-align: center; margin-top: 50px; border-radius: 0 0 20px 20px;">
+            <div>
+                <p style="margin: 0; font-size: 1.1rem; font-weight: 500;">
+                    <i class="bi bi-calendar-check"></i> Daily Plan Tracker
+                </p>
+                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 0.9rem;">
+                    368 Days Learning Journey | Build Your Future One Day at a Time
+                </p>
+                <p style="margin: 10px 0 0 0; opacity: 0.8; font-size: 0.85rem;">
+                    © @DateTime.Now.Year - Track Progress, Achieve Goals, Transform Your Life
+                </p>
             </div>
-        }
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        </footer>
     </div>
-
-    <footer class="footer mt-auto py-3 bg-light">
-        <div class="container text-center">
-            <span class="text-muted">Daily Plan Tracker - 368 Days Learning Journey © @DateTime.Now.Year</span>
-        </div>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>

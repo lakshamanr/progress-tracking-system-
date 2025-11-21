@@ -1,0 +1,191 @@
+@model List<DailyPlan>
+@{
+    ViewData["Title"] = "Calendar View";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-calendar3 text-primary"></i> Full Calendar View
+        </h1>
+        <p class="lead">368-Day Learning Journey at a Glance</p>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    var totalDays = Model.Count;
+    var completedDays = Model.Count(p => p.Progress != null && p.Progress.IsFullyCompleted);
+    var partialDays = Model.Count(p => p.Progress != null && !p.Progress.IsFullyCompleted);
+
+    <!-- Legend -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="card-title">Legend:</h6>
+            <div class="d-flex flex-wrap gap-3">
+                <div><span class="badge bg-success me-2">■</span> Completed (100%)</div>
+                <div><span class="badge bg-warning me-2">■</span> In Progress (1-99%)</div>
+                <div><span class="badge bg-secondary me-2">■</span> Not Started</div>
+                <div><span class="badge bg-danger me-2">■</span> Today</div>
+            </div>
+            <div class="mt-3">
+                <strong>Progress Overview:</strong>
+                <span class="ms-3"><i class="bi bi-check-circle text-success"></i> @completedDays completed</span>
+                <span class="ms-3"><i class="bi bi-hourglass-split text-warning"></i> @partialDays in progress</span>
+                <span class="ms-3"><i class="bi bi-circle text-secondary"></i> @(totalDays - completedDays - partialDays) not started</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Heatmap by Month -->
+    @{
+        var monthlyGroups = Model.GroupBy(p => new { p.MonthNumber, p.MonthTheme })
+            .OrderBy(g => g.Key.MonthNumber)
+            .ToList();
+    }
+
+    @foreach (var monthGroup in monthlyGroups)
+    {
+        var monthPlans = monthGroup.OrderBy(p => p.DayNumber).ToList();
+        var monthName = monthPlans.First().CurrentDate.ToString("MMMM yyyy");
+        var completedInMonth = monthPlans.Count(p => p.Progress != null && p.Progress.IsFullyCompleted);
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">@monthName</h5>
+                    <span>
+                        @if (!string.IsNullOrEmpty(monthGroup.Key.MonthTheme))
+                        {
+                            <small>@monthGroup.Key.MonthTheme</small>
+                        }
+                        <span class="badge bg-light text-dark ms-2">@completedInMonth / @monthPlans.Count completed</span>
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-1">
+                    @foreach (var plan in monthPlans)
+                    {
+                        var isToday = plan.CurrentDate.Date == DateTime.Today;
+                        var statusClass = isToday ? "bg-danger text-white" :
+                            plan.Progress == null ? "bg-secondary text-white" :
+                            plan.Progress.IsFullyCompleted ? "bg-success text-white" :
+                            "bg-warning text-dark";
+
+                        var tooltipText = $"Day {plan.DayNumber} - {plan.CurrentDate:MMM d}\\n{plan.Title}\\n" +
+                            $"Status: {(plan.Progress == null ? "Not Started" : plan.Progress.IsFullyCompleted ? "Completed" : $"In Progress ({plan.Progress.CompletionPercentage}%)")}";
+
+                        if (plan.Progress != null)
+                        {
+                            tooltipText += $"\\nDSA: {plan.Progress.DsaProblemsCompleted} | Hours: {plan.Progress.HoursSpent:F1}";
+                        }
+
+                        <div class="col-1">
+                            <div class="calendar-day @statusClass"
+                                 data-bs-toggle="tooltip"
+                                 data-bs-placement="top"
+                                 data-bs-html="true"
+                                 title="@tooltipText"
+                                 style="min-height: 50px; font-size: 0.7rem; cursor: pointer;">
+                                <div class="text-center">
+                                    <strong>@plan.DayNumber</strong><br />
+                                    <small>@plan.CurrentDate.ToString("MMM d")</small>
+                                    @if (plan.Progress != null)
+                                    {
+                                        <br /><small>@plan.Progress.CompletionPercentage%</small>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Yearly Overview Chart -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Yearly Progress Trend</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="yearlyProgressChart" height="100"></canvas>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> No plans found. Please import your plan first.
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Yearly Progress Chart
+        @if (Model != null && Model.Any())
+        {
+            var weeklyData = Model
+                .GroupBy(p => p.WeekNumber)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    Week = g.Key,
+                    Completed = g.Count(p => p.Progress != null && p.Progress.IsFullyCompleted),
+                    Total = g.Count()
+                })
+                .ToList();
+
+            <text>
+            const yearlyCtx = document.getElementById('yearlyProgressChart').getContext('2d');
+            new Chart(yearlyCtx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", weeklyData.Select(w => $"'Week {w.Week}'")))],
+                    datasets: [{
+                        label: 'Cumulative Completion %',
+                        data: [@Html.Raw(string.Join(",", weeklyData.Select((w, i) =>
+                        {
+                            var cumulativeCompleted = weeklyData.Take(i + 1).Sum(x => x.Completed);
+                            var cumulativeTotal = weeklyData.Take(i + 1).Sum(x => x.Total);
+                            return cumulativeTotal > 0 ? (cumulativeCompleted * 100.0 / cumulativeTotal).ToString("F1") : "0";
+                        })))],
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    </script>
+}

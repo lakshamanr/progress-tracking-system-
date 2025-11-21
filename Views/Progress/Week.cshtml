@@ -1,0 +1,305 @@
+@model List<DailyPlan>
+@{
+    ViewData["Title"] = "This Week";
+    var weekStart = ViewBag.WeekStart as DateTime? ?? DateTime.Today;
+    var weekEnd = ViewBag.WeekEnd as DateTime? ?? DateTime.Today;
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-calendar-week text-primary"></i> This Week's Progress
+        </h1>
+        <p class="lead">@weekStart.ToString("MMMM d") - @weekEnd.ToString("MMMM d, yyyy")</p>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    // Calculate week stats
+    var totalDays = Model.Count;
+    var completedDays = Model.Count(p => p.Progress != null && p.Progress.IsFullyCompleted);
+    var totalDsa = Model.Sum(p => p.Progress?.DsaProblemsCompleted ?? 0);
+    var totalHours = Model.Sum(p => p.Progress?.HoursSpent ?? 0);
+    var avgEnergy = Model.Where(p => p.Progress != null).Average(p => (double?)p.Progress!.EnergyLevel) ?? 0;
+    var avgConfidence = Model.Where(p => p.Progress != null).Average(p => (double?)p.Progress!.ConfidenceLevel) ?? 0;
+
+    <!-- Week Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="bi bi-check-circle"></i> Completed</h6>
+                    <h2>@completedDays / @totalDays</h2>
+                    <small>@((totalDays > 0 ? (completedDays * 100.0 / totalDays) : 0).ToString("F0"))%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="bi bi-code-square"></i> DSA Problems</h6>
+                    <h2>@totalDsa</h2>
+                    <small>This week</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="bi bi-clock"></i> Total Hours</h6>
+                    <h2>@totalHours.ToString("F1")</h2>
+                    <small>Logged</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="bi bi-battery-charging"></i> Avg Energy</h6>
+                    <h2>@avgEnergy.ToString("F1")</h2>
+                    <small>Out of 5</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Breakdown Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Daily Breakdown</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Date</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Morning</th>
+                            <th>Evening</th>
+                            <th>Night</th>
+                            <th>DSA</th>
+                            <th>Hours</th>
+                            <th>Energy</th>
+                            <th>Confidence</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var plan in Model.OrderBy(p => p.CurrentDate))
+                        {
+                            var isToday = plan.CurrentDate.Date == DateTime.Today;
+                            var rowClass = isToday ? "table-active" : "";
+
+                            <tr class="@rowClass">
+                                <td>
+                                    <strong>Day @plan.DayNumber</strong>
+                                    @if (isToday)
+                                    {
+                                        <span class="badge bg-warning">Today</span>
+                                    }
+                                </td>
+                                <td>@plan.CurrentDate.ToString("ddd, MMM d")</td>
+                                <td>
+                                    <span data-bs-toggle="tooltip" data-bs-placement="top" title="@plan.Title">
+                                        @(plan.Title.Length > 30 ? plan.Title.Substring(0, 30) + "..." : plan.Title)
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (plan.Progress == null)
+                                    {
+                                        <span class="badge bg-secondary">Not Started</span>
+                                    }
+                                    else if (plan.Progress.IsFullyCompleted)
+                                    {
+                                        <span class="badge bg-success">Completed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">In Progress</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (plan.Progress?.MorningCompleted == true)
+                                    {
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-circle text-muted"></i>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (plan.Progress?.EveningCompleted == true)
+                                    {
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-circle text-muted"></i>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (plan.Progress?.NightCompleted == true)
+                                    {
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-circle text-muted"></i>
+                                    }
+                                </td>
+                                <td>@(plan.Progress?.DsaProblemsCompleted ?? 0)</td>
+                                <td>@(plan.Progress?.HoursSpent.ToString("F1") ?? "0.0")</td>
+                                <td>
+                                    @if (plan.Progress != null)
+                                    {
+                                        <span class="badge @(plan.Progress.EnergyLevel >= 4 ? "bg-success" : plan.Progress.EnergyLevel >= 3 ? "bg-warning" : "bg-danger")">
+                                            @plan.Progress.EnergyLevel/5
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (plan.Progress != null)
+                                    {
+                                        <span class="badge @(plan.Progress.ConfidenceLevel >= 4 ? "bg-success" : plan.Progress.ConfidenceLevel >= 3 ? "bg-warning" : "bg-danger")">
+                                            @plan.Progress.ConfidenceLevel/5
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (isToday)
+                                    {
+                                        <a href="@Url.Action("Today", "Progress")" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i> Track
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Progress Chart -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Daily Completion</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="weekCompletionChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-graph-up"></i> Energy & Confidence</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="weekMetricsChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> No plans found for this week.
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Week Completion Chart
+        const completionCtx = document.getElementById('weekCompletionChart').getContext('2d');
+        new Chart(completionCtx, {
+            type: 'bar',
+            data: {
+                labels: [@Html.Raw(string.Join(",", Model.OrderBy(p => p.CurrentDate).Select(p => $"'{p.CurrentDate.ToString("ddd")}'")))],
+                datasets: [{
+                    label: 'Completion %',
+                    data: [@string.Join(",", Model.OrderBy(p => p.CurrentDate).Select(p => p.Progress?.CompletionPercentage ?? 0))],
+                    backgroundColor: 'rgba(25, 135, 84, 0.8)',
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Energy & Confidence Chart
+        const metricsCtx = document.getElementById('weekMetricsChart').getContext('2d');
+        new Chart(metricsCtx, {
+            type: 'line',
+            data: {
+                labels: [@Html.Raw(string.Join(",", Model.OrderBy(p => p.CurrentDate).Select(p => $"'{p.CurrentDate.ToString("ddd")}'")))],
+                datasets: [
+                    {
+                        label: 'Energy Level',
+                        data: [@string.Join(",", Model.OrderBy(p => p.CurrentDate).Select(p => p.Progress?.EnergyLevel ?? 0))],
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Confidence Level',
+                        data: [@string.Join(",", Model.OrderBy(p => p.CurrentDate).Select(p => p.Progress?.ConfidenceLevel ?? 0))],
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    </script>
+}

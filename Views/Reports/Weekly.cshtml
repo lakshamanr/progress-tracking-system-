@@ -1,0 +1,148 @@
+@model List<WeeklySummary>
+@{
+    ViewData["Title"] = "Weekly Reports";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-calendar-week text-primary"></i> Weekly Summary Reports
+        </h1>
+        <p class="lead">Review your weekly progress and insights</p>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    var totalWeeks = Model.Count;
+    var totalDaysCompleted = Model.Sum(w => w.DaysCompleted);
+    var totalDsaProblems = Model.Sum(w => w.TotalDsaProblems);
+    var totalHours = Model.Sum(w => w.TotalHours);
+
+    <!-- Overall Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h6>Total Weeks Tracked</h6>
+                    <h2>@totalWeeks</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h6>Days Completed</h6>
+                    <h2>@totalDaysCompleted</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h6>DSA Problems</h6>
+                    <h2>@totalDsaProblems</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h6>Total Hours</h6>
+                    <h2>@totalHours.ToString("F0")</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Summaries -->
+    @foreach (var summary in Model)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-week"></i> Week @summary.WeekNumber
+                    </h5>
+                    <span>
+                        @summary.WeekStartDate.ToString("MMM d") - @summary.WeekEndDate.ToString("MMM d, yyyy")
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-check-circle text-success fs-3"></i>
+                            <h4 class="mt-2">@summary.DaysCompleted</h4>
+                            <small>Days Completed</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-code-square text-info fs-3"></i>
+                            <h4 class="mt-2">@summary.TotalDsaProblems</h4>
+                            <small>DSA Problems</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-clock text-warning fs-3"></i>
+                            <h4 class="mt-2">@summary.TotalHours.ToString("F1")</h4>
+                            <small>Hours Logged</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-battery-charging text-success fs-3"></i>
+                            <h4 class="mt-2">@summary.AverageEnergyLevel.ToString("F1")</h4>
+                            <small>Avg Energy</small>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(summary.KeyLearnings))
+                {
+                    <div class="alert alert-success">
+                        <h6><i class="bi bi-lightbulb"></i> Key Learnings:</h6>
+                        <p class="mb-0">@summary.KeyLearnings</p>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(summary.AreasToImprove))
+                {
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle"></i> Areas to Improve:</h6>
+                        <p class="mb-0">@summary.AreasToImprove</p>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(summary.Notes))
+                {
+                    <div class="mt-3">
+                        <h6><i class="bi bi-journal-text"></i> Notes:</h6>
+                        <p>@summary.Notes</p>
+                    </div>
+                }
+
+                <div class="text-muted mt-3">
+                    <small><i class="bi bi-calendar-check"></i> Created: @summary.CreatedDate.ToString("MMMM d, yyyy")</small>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No weekly summaries found yet.
+        Weekly summaries are created automatically as you track your progress.
+    </div>
+}
+
+<!-- Create Summary Button -->
+<div class="text-center mt-4">
+    <a href="@Url.Action("Week", "Progress")" class="btn btn-primary btn-lg">
+        <i class="bi bi-calendar-week"></i> View This Week
+    </a>
+</div>

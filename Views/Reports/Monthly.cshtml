@@ -1,0 +1,157 @@
+@{
+    ViewData["Title"] = "Monthly Reports";
+    var monthlyStats = ViewBag.MonthlyStats ?? new List<dynamic>();
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-calendar-month text-primary"></i> Monthly Progress Reports
+        </h1>
+        <p class="lead">Track your progress month by month</p>
+    </div>
+</div>
+
+@if (monthlyStats != null && monthlyStats.Count > 0)
+{
+    <!-- Monthly Breakdown -->
+    @foreach (var month in monthlyStats)
+    {
+        var monthNumber = month.MonthNumber;
+        var monthName = new DateTime(2026, monthNumber == 12 ? 12 : monthNumber, 1).ToString("MMMM");
+        var year = monthNumber == 12 ? 2025 : 2026;
+        var completionRate = month.TotalDays > 0 ? (month.CompletedDays * 100.0 / month.TotalDays) : 0;
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar3"></i> @monthName @year
+                    </h5>
+                    @if (!string.IsNullOrEmpty(month.MonthTheme))
+                    {
+                        <span class="badge bg-light text-dark">@month.MonthTheme</span>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <div class="progress mb-2" style="height: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                     style="width: @completionRate.ToString("F0")%"></div>
+                            </div>
+                            <h4>@month.CompletedDays / @month.TotalDays</h4>
+                            <small>Days Completed (@completionRate.ToString("F0")%)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-code-square text-info fs-2"></i>
+                            <h4 class="mt-2">@month.TotalDsaProblems</h4>
+                            <small>DSA Problems Solved</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-clock text-warning fs-2"></i>
+                            <h4 class="mt-2">@month.TotalHours.ToString("F1")</h4>
+                            <small>Hours Invested</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-trophy text-danger fs-2"></i>
+                            <h4 class="mt-2">@((month.TotalDays > 0 ? (month.CompletedDays * 100.0 / month.TotalDays) : 0) >= 80 ? "🏆" : "📊")</h4>
+                            <small>@((month.TotalDays > 0 ? (month.CompletedDays * 100.0 / month.TotalDays) : 0) >= 80 ? "Great Month!" : "Keep Going!")</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-bar-chart"></i> Completion Progress</h6>
+                        <div class="progress mb-3" style="height: 30px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: @completionRate.ToString("F0")%">
+                                @completionRate.ToString("F1")%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-list-check"></i> Key Metrics</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Completed Days: @month.CompletedDays</li>
+                            <li><i class="bi bi-circle text-secondary"></i> Remaining Days: @(month.TotalDays - month.CompletedDays)</li>
+                            <li><i class="bi bi-clock-history text-info"></i> Avg Hours/Day: @((month.CompletedDays > 0 ? (month.TotalHours / month.CompletedDays) : 0).ToString("F1"))</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <a href="@Url.Action("Month", "Progress")" class="btn btn-outline-primary mt-2">
+                    <i class="bi bi-calendar3"></i> View Month Details
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- Yearly Summary Chart -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Yearly Progress Overview</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="yearlyOverviewChart" height="100"></canvas>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No monthly data available yet. Start tracking your progress!
+    </div>
+}
+
+@section Scripts {
+    <script>
+        @if (monthlyStats != null && monthlyStats.Count > 0)
+        {
+            <text>
+            const yearlyCtx = document.getElementById('yearlyOverviewChart').getContext('2d');
+            new Chart(yearlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", monthlyStats.Select(m => $"'{new DateTime(2026, m.MonthNumber == 12 ? 12 : m.MonthNumber, 1).ToString("MMM")}'")))],
+                    datasets: [
+                        {
+                            label: 'Days Completed',
+                            data: [@Html.Raw(string.Join(",", monthlyStats.Select(m => m.CompletedDays)))],
+                            backgroundColor: 'rgba(25, 135, 84, 0.8)'
+                        },
+                        {
+                            label: 'DSA Problems',
+                            data: [@Html.Raw(string.Join(",", monthlyStats.Select(m => m.TotalDsaProblems)))],
+                            backgroundColor: 'rgba(13, 202, 240, 0.8)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}

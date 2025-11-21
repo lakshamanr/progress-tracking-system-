@@ -1,0 +1,359 @@
+@model List<DailyProgress>
+@{
+    ViewData["Title"] = "Statistics";
+    var stats = ViewBag.Stats;
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-graph-up text-primary"></i> Comprehensive Statistics
+        </h1>
+        <p class="lead">Deep dive into your learning journey analytics</p>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar3 fs-1"></i>
+                <h6 class="card-title mt-2">Total Days</h6>
+                <h2 class="display-4">@stats.TotalDays</h2>
+                <p class="mb-0">In the plan</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle fs-1"></i>
+                <h6 class="card-title mt-2">Completed Days</h6>
+                <h2 class="display-4">@stats.CompletedDays</h2>
+                <p class="mb-0">@((stats.TotalDays > 0 ? (stats.CompletedDays * 100.0 / stats.TotalDays) : 0).ToString("F1"))% completion</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-code-square fs-1"></i>
+                <h6 class="card-title mt-2">DSA Problems</h6>
+                <h2 class="display-4">@stats.TotalDsaProblems</h2>
+                <p class="mb-0">Total solved</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-fire fs-1"></i>
+                <h6 class="card-title mt-2">Current Streak</h6>
+                <h2 class="display-4">@stats.CurrentStreak</h2>
+                <p class="mb-0">Days in a row</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Metrics -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-primary h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-clock text-primary fs-2"></i>
+                <h6 class="card-title mt-2">Total Hours</h6>
+                <h3>@stats.TotalHours.ToString("F1")</h3>
+                <p class="text-muted mb-0">Time invested</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-warning h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-hourglass-split text-warning fs-2"></i>
+                <h6 class="card-title mt-2">Partial Days</h6>
+                <h3>@stats.PartialDays</h3>
+                <p class="text-muted mb-0">In progress</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-success h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-battery-charging text-success fs-2"></i>
+                <h6 class="card-title mt-2">Avg Energy</h6>
+                <h3>@stats.AverageEnergy.ToString("F1") / 5</h3>
+                <p class="text-muted mb-0">Energy level</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card border-info h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up-arrow text-info fs-2"></i>
+                <h6 class="card-title mt-2">Avg Confidence</h6>
+                <h3>@stats.AverageConfidence.ToString("F1") / 5</h3>
+                <p class="text-muted mb-0">Confidence level</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Completion Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="completionPieChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Progress Over Time</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="progressTimelineChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> DSA Problems Over Time</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dsaProgressChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Daily Hours Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="hoursDistributionChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 3 -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-battery-charging"></i> Energy Levels Over Time</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="energyChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Confidence Levels Over Time</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="confidenceChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Breakdown -->
+@if (Model != null && Model.Any())
+{
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> Activity Completion Breakdown</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-sun fs-1 text-warning"></i>
+                    <h5 class="mt-2">Morning Activities</h5>
+                    <h3>@Model.Count(p => p.MorningCompleted) / @Model.Count</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-warning" role="progressbar"
+                             style="width: @((Model.Count > 0 ? (Model.Count(p => p.MorningCompleted) * 100.0 / Model.Count) : 0).ToString("F0"))%">
+                            @((Model.Count > 0 ? (Model.Count(p => p.MorningCompleted) * 100.0 / Model.Count) : 0).ToString("F0"))%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-sunset fs-1 text-danger"></i>
+                    <h5 class="mt-2">Evening Activities</h5>
+                    <h3>@Model.Count(p => p.EveningCompleted) / @Model.Count</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-danger" role="progressbar"
+                             style="width: @((Model.Count > 0 ? (Model.Count(p => p.EveningCompleted) * 100.0 / Model.Count) : 0).ToString("F0"))%">
+                            @((Model.Count > 0 ? (Model.Count(p => p.EveningCompleted) * 100.0 / Model.Count) : 0).ToString("F0"))%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-moon fs-1 text-primary"></i>
+                    <h5 class="mt-2">Night Activities</h5>
+                    <h3>@Model.Count(p => p.NightCompleted) / @Model.Count</h3>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-primary" role="progressbar"
+                             style="width: @((Model.Count > 0 ? (Model.Count(p => p.NightCompleted) * 100.0 / Model.Count) : 0).ToString("F0"))%">
+                            @((Model.Count > 0 ? (Model.Count(p => p.NightCompleted) * 100.0 / Model.Count) : 0).ToString("F0"))%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Completion Pie Chart
+        const pieCtx = document.getElementById('completionPieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Completed', 'Partial', 'Not Started'],
+                datasets: [{
+                    data: [@stats.CompletedDays, @stats.PartialDays, @(stats.TotalDays - stats.CompletedDays - stats.PartialDays)],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(108, 117, 125, 0.5)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Progress Timeline Chart
+        @if (Model != null && Model.Any())
+        {
+            var orderedProgress = Model.OrderBy(p => p.CompletedDate).ToList();
+            <text>
+            const timelineCtx = document.getElementById('progressTimelineChart').getContext('2d');
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", orderedProgress.Select((p, i) => $"'Day {i + 1}'")))],
+                    datasets: [{
+                        label: 'Cumulative Days Completed',
+                        data: [@Html.Raw(string.Join(",", orderedProgress.Select((p, i) => i + 1)))],
+                        borderColor: 'rgba(25, 135, 84, 1)',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // DSA Progress Chart
+            const dsaCtx = document.getElementById('dsaProgressChart').getContext('2d');
+            new Chart(dsaCtx, {
+                type: 'bar',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", orderedProgress.Select((p, i) => $"'Day {i + 1}'")))],
+                    datasets: [{
+                        label: 'DSA Problems',
+                        data: [@string.Join(",", orderedProgress.Select(p => p.DsaProblemsCompleted))],
+                        backgroundColor: 'rgba(13, 202, 240, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Hours Distribution Chart
+            const hoursCtx = document.getElementById('hoursDistributionChart').getContext('2d');
+            new Chart(hoursCtx, {
+                type: 'bar',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", orderedProgress.Select((p, i) => $"'Day {i + 1}'")))],
+                    datasets: [{
+                        label: 'Hours Spent',
+                        data: [@string.Join(",", orderedProgress.Select(p => p.HoursSpent.ToString("F1")))],
+                        backgroundColor: 'rgba(255, 193, 7, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Energy Levels Chart
+            const energyCtx = document.getElementById('energyChart').getContext('2d');
+            new Chart(energyCtx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", orderedProgress.Select((p, i) => $"'Day {i + 1}'")))],
+                    datasets: [{
+                        label: 'Energy Level',
+                        data: [@string.Join(",", orderedProgress.Select(p => p.EnergyLevel))],
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 5 } }
+                }
+            });
+
+            // Confidence Levels Chart
+            const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+            new Chart(confidenceCtx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", orderedProgress.Select((p, i) => $"'Day {i + 1}'")))],
+                    datasets: [{
+                        label: 'Confidence Level',
+                        data: [@string.Join(",", orderedProgress.Select(p => p.ConfidenceLevel))],
+                        borderColor: 'rgba(108, 117, 125, 1)',
+                        backgroundColor: 'rgba(108, 117, 125, 0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 5 } }
+                }
+            });
+            </text>
+        }
+    </script>
+}

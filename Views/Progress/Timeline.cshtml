@@ -1,0 +1,206 @@
+@model List<DailyPlan>
+@{
+    ViewData["Title"] = "Timeline";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-clock-history text-primary"></i> Progress Timeline
+        </h1>
+        <p class="lead">Your learning journey visualized</p>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    var today = DateTime.Today;
+    var pastDays = Model.Where(p => p.CurrentDate < today).OrderByDescending(p => p.CurrentDate).ToList();
+    var todayPlan = Model.FirstOrDefault(p => p.CurrentDate.Date == today);
+    var futureDays = Model.Where(p => p.CurrentDate > today).OrderBy(p => p.CurrentDate).Take(10).ToList();
+
+    <!-- Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h6>Past Days</h6>
+                    <h2>@pastDays.Count</h2>
+                    <small>@pastDays.Count(p => p.Progress != null && p.Progress.IsFullyCompleted) completed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h6>Today</h6>
+                    <h2>Day @(todayPlan?.DayNumber ?? 0)</h2>
+                    <small>@(todayPlan?.Progress?.CompletionPercentage ?? 0)% complete</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h6>Upcoming Days</h6>
+                    <h2>@futureDays.Count</h2>
+                    <small>Next 10 days</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+        <!-- Today -->
+        @if (todayPlan != null)
+        {
+            <div class="timeline-item @(todayPlan.Progress == null ? "" : todayPlan.Progress.IsFullyCompleted ? "completed" : "in-progress")">
+                <div class="card border-warning border-3">
+                    <div class="card-header bg-warning text-dark">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-star-fill"></i> TODAY - Day @todayPlan.DayNumber
+                            </h5>
+                            <span class="badge bg-dark">@todayPlan.CurrentDate.ToString("MMMM d, yyyy")</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h6>@todayPlan.Title</h6>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <p><strong><i class="bi bi-sun"></i> Morning:</strong><br/>@todayPlan.MorningActivity</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong><i class="bi bi-sunset"></i> Evening:</strong><br/>@todayPlan.EveningActivity</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong><i class="bi bi-moon"></i> Night:</strong><br/>@todayPlan.NightActivity</p>
+                            </div>
+                        </div>
+                        @if (todayPlan.Progress != null)
+                        {
+                            <div class="alert alert-info mt-3">
+                                <strong>Progress:</strong> @todayPlan.Progress.CompletionPercentage% |
+                                DSA: @todayPlan.Progress.DsaProblemsCompleted |
+                                Hours: @todayPlan.Progress.HoursSpent.ToString("F1")
+                            </div>
+                        }
+                        <a href="@Url.Action("Today", "Progress")" class="btn btn-primary mt-2">
+                            <i class="bi bi-pencil"></i> Track Today's Progress
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Recent Past Days -->
+        <h4 class="mt-4 mb-3"><i class="bi bi-check-circle text-success"></i> Recent Past Days</h4>
+        @foreach (var plan in pastDays.Take(10))
+        {
+            var status = plan.Progress == null ? "not-started" :
+                plan.Progress.IsFullyCompleted ? "completed" : "in-progress";
+
+            <div class="timeline-item @status">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    @if (plan.Progress != null && plan.Progress.IsFullyCompleted)
+                                    {
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    }
+                                    else if (plan.Progress != null)
+                                    {
+                                        <i class="bi bi-hourglass-split text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-circle text-secondary"></i>
+                                    }
+                                    Day @plan.DayNumber - @plan.Title
+                                </h6>
+                                <small class="text-muted">@plan.CurrentDate.ToString("MMMM d, yyyy (dddd)")</small>
+                            </div>
+                            <div class="text-end">
+                                @if (plan.Progress != null)
+                                {
+                                    <span class="badge @(plan.Progress.IsFullyCompleted ? "bg-success" : "bg-warning")">
+                                        @plan.Progress.CompletionPercentage%
+                                    </span>
+                                    <br/>
+                                    <small class="text-muted">
+                                        DSA: @plan.Progress.DsaProblemsCompleted | @plan.Progress.HoursSpent.ToString("F1")h
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small><strong>Focus:</strong> @plan.FocusArea</small>
+                        </div>
+                        @if (plan.Progress != null && !string.IsNullOrEmpty(plan.Progress.Notes))
+                        {
+                            <div class="mt-2">
+                                <small><strong>Notes:</strong> @plan.Progress.Notes</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Upcoming Days -->
+        <h4 class="mt-4 mb-3"><i class="bi bi-calendar3 text-info"></i> Upcoming Days</h4>
+        @foreach (var plan in futureDays)
+        {
+            <div class="timeline-item">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="bi bi-circle text-secondary"></i>
+                                    Day @plan.DayNumber - @plan.Title
+                                </h6>
+                                <small class="text-muted">@plan.CurrentDate.ToString("MMMM d, yyyy (dddd)")</small>
+                            </div>
+                            <span class="badge bg-secondary">Upcoming</span>
+                        </div>
+                        <div class="mt-2">
+                            <small><strong>Focus:</strong> @plan.FocusArea</small>
+                        </div>
+                        <div class="mt-2">
+                            <details>
+                                <summary class="cursor-pointer"><small>View Activities</small></summary>
+                                <div class="mt-2">
+                                    <small>
+                                        <strong>Morning:</strong> @plan.MorningActivity<br/>
+                                        <strong>Evening:</strong> @plan.EveningActivity<br/>
+                                        <strong>Night:</strong> @plan.NightActivity
+                                    </small>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- View All Button -->
+    @if (futureDays.Count >= 10)
+    {
+        <div class="text-center mt-4">
+            <a href="@Url.Action("Calendar", "Progress")" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-calendar3"></i> View Full Calendar
+            </a>
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> No plans found. Please import your plan first.
+    </div>
+}

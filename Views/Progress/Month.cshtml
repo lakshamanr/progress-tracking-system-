@@ -1,0 +1,256 @@
+@model List<DailyPlan>
+@{
+    ViewData["Title"] = "This Month";
+    var monthName = ViewBag.MonthName as string ?? DateTime.Today.ToString("MMMM yyyy");
+    var monthTheme = ViewBag.MonthTheme as string ?? "";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">
+            <i class="bi bi-calendar-month text-primary"></i> @monthName
+        </h1>
+        @if (!string.IsNullOrEmpty(monthTheme))
+        {
+            <p class="lead"><strong>Theme:</strong> @monthTheme</p>
+        }
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    // Calculate month stats
+    var totalDays = Model.Count;
+    var completedDays = Model.Count(p => p.Progress != null && p.Progress.IsFullyCompleted);
+    var partialDays = Model.Count(p => p.Progress != null && !p.Progress.IsFullyCompleted && (p.Progress.MorningCompleted || p.Progress.EveningCompleted || p.Progress.NightCompleted));
+    var notStartedDays = totalDays - completedDays - partialDays;
+    var totalDsa = Model.Sum(p => p.Progress?.DsaProblemsCompleted ?? 0);
+    var totalHours = Model.Sum(p => p.Progress?.HoursSpent ?? 0);
+
+    <!-- Month Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="bi bi-check-circle"></i> Completed</h6>
+                    <h2>@completedDays</h2>
+                    <small>@((totalDays > 0 ? (completedDays * 100.0 / totalDays) : 0).ToString("F0"))% of month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="bi bi-hourglass-split"></i> In Progress</h6>
+                    <h2>@partialDays</h2>
+                    <small>Partially completed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="bi bi-code-square"></i> DSA Total</h6>
+                    <h2>@totalDsa</h2>
+                    <small>Problems solved</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h6 class="card-title"><i class="bi bi-clock"></i> Total Hours</h6>
+                    <h2>@totalHours.ToString("F1")</h2>
+                    <small>Time invested</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Chart -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="bi bi-pie-chart"></i> Completion Status</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthStatusChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Daily DSA Problems</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthDsaChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-calendar3"></i> Monthly Calendar</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                @foreach (var plan in Model.OrderBy(p => p.CurrentDate))
+                {
+                    var isToday = plan.CurrentDate.Date == DateTime.Today;
+                    var statusClass = plan.Progress == null ? "bg-secondary" :
+                        plan.Progress.IsFullyCompleted ? "bg-success" :
+                        "bg-warning";
+                    var textClass = plan.Progress == null ? "text-white" :
+                        plan.Progress.IsFullyCompleted ? "text-white" :
+                        "text-dark";
+
+                    <div class="col-md-3 col-sm-4 col-6">
+                        <div class="card @statusClass @textClass @(isToday ? "border border-danger border-3" : "")">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-0">
+                                            Day @plan.DayNumber
+                                            @if (isToday)
+                                            {
+                                                <span class="badge bg-danger">Today</span>
+                                            }
+                                        </h6>
+                                        <small>@plan.CurrentDate.ToString("MMM d")</small>
+                                    </div>
+                                    @if (plan.Progress != null)
+                                    {
+                                        <span class="badge @(plan.Progress.IsFullyCompleted ? "bg-light text-success" : "bg-dark text-warning")">
+                                            @plan.Progress.CompletionPercentage%
+                                        </span>
+                                    }
+                                </div>
+                                <p class="mb-1 mt-2" style="font-size: 0.75rem;">
+                                    @(plan.Title.Length > 40 ? plan.Title.Substring(0, 40) + "..." : plan.Title)
+                                </p>
+                                @if (plan.Progress != null)
+                                {
+                                    <div class="mt-2">
+                                        <small>
+                                            @if (plan.Progress.MorningCompleted) { <i class="bi bi-sun-fill"></i> }
+                                            @if (plan.Progress.EveningCompleted) { <i class="bi bi-sunset-fill"></i> }
+                                            @if (plan.Progress.NightCompleted) { <i class="bi bi-moon-fill"></i> }
+                                            <span class="ms-2">DSA: @plan.Progress.DsaProblemsCompleted</span>
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Focus Areas Summary -->
+    <div class="row mt-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-bullseye"></i> Focus Areas This Month</h6>
+                </div>
+                <div class="card-body">
+                    @{
+                        var focusAreas = Model
+                            .Where(p => !string.IsNullOrEmpty(p.FocusArea))
+                            .GroupBy(p => p.FocusArea)
+                            .Select(g => new { Area = g.Key, Count = g.Count() })
+                            .OrderByDescending(x => x.Count)
+                            .ToList();
+                    }
+
+                    <div class="row">
+                        @foreach (var focus in focusAreas.Take(6))
+                        {
+                            <div class="col-md-4 mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-tag-fill text-primary"></i> @focus.Area</span>
+                                    <span class="badge bg-primary">@focus.Count days</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> No plans found for this month.
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Status Pie Chart
+        const statusCtx = document.getElementById('monthStatusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Not Started'],
+                datasets: [{
+                    data: [@completedDays, @partialDays, @notStartedDays],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(108, 117, 125, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(25, 135, 84, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(108, 117, 125, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // DSA Problems Chart
+        const dsaCtx = document.getElementById('monthDsaChart').getContext('2d');
+        new Chart(dsaCtx, {
+            type: 'bar',
+            data: {
+                labels: [@Html.Raw(string.Join(",", Model.OrderBy(p => p.CurrentDate).Take(15).Select(p => $"'Day {p.DayNumber}'")))],
+                datasets: [{
+                    label: 'DSA Problems',
+                    data: [@string.Join(",", Model.OrderBy(p => p.CurrentDate).Take(15).Select(p => p.Progress?.DsaProblemsCompleted ?? 0))],
+                    backgroundColor: 'rgba(13, 202, 240, 0.8)',
+                    borderColor: 'rgba(13, 202, 240, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -25,7 +25,8 @@ public class HomeController : Controller
 
         // Get overall stats
         var totalDays = await _context.DailyPlans.CountAsync();
-        var completedDays = await _context.DailyProgress.CountAsync(p => p.IsFullyCompleted);
+        var completedDays = await _context.DailyProgress
+            .CountAsync(p => p.MorningCompleted && p.EveningCompleted && p.NightCompleted);
         var totalDsaProblems = await _context.DailyProgress.SumAsync(p => (int?)p.DsaProblemsCompleted) ?? 0;
         var totalHours = await _context.DailyProgress.SumAsync(p => (double?)p.HoursSpent) ?? 0;
 

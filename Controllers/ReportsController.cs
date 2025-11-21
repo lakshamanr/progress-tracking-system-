@@ -84,7 +84,7 @@ public class ReportsController : Controller
                 MonthNumber = g.Key.MonthNumber,
                 MonthTheme = g.Key.MonthTheme,
                 TotalDays = g.Count(),
-                CompletedDays = g.Count(p => p.Progress != null && p.Progress.IsFullyCompleted),
+                CompletedDays = g.Count(p => p.Progress != null && p.Progress.MorningCompleted && p.Progress.EveningCompleted && p.Progress.NightCompleted),
                 TotalDsaProblems = g.Sum(p => p.Progress != null ? p.Progress.DsaProblemsCompleted : 0),
                 TotalHours = g.Sum(p => p.Progress != null ? p.Progress.HoursSpent : 0)
             })
@@ -149,7 +149,8 @@ public class ReportsController : Controller
     private async Task AddOverviewSheet(IXLWorksheet sheet)
     {
         var totalDays = await _context.DailyPlans.CountAsync();
-        var completedDays = await _context.DailyProgress.CountAsync(p => p.IsFullyCompleted);
+        var completedDays = await _context.DailyProgress
+            .CountAsync(p => p.MorningCompleted && p.EveningCompleted && p.NightCompleted);
         var totalDsaProblems = await _context.DailyProgress.SumAsync(p => (int?)p.DsaProblemsCompleted) ?? 0;
         var totalHours = await _context.DailyProgress.SumAsync(p => (double?)p.HoursSpent) ?? 0;
 
